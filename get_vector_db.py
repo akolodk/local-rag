@@ -7,7 +7,7 @@ COLLECTION_NAME = os.getenv('COLLECTION_NAME', 'local-rag')
 TEXT_EMBEDDING_MODEL = os.getenv('TEXT_EMBEDDING_MODEL', 'nomic-embed-text')
 
 def get_vector_db():
-    embedding = OllamaEmbeddings(model=TEXT_EMBEDDING_MODEL,show_progress=True)
+    embedding = OllamaEmbeddings(model=TEXT_EMBEDDING_MODEL,show_progress=True, base_url='http://172.28.193.30:11434' )
 
     db = Chroma(
         collection_name=COLLECTION_NAME,

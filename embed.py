@@ -1,7 +1,8 @@
 import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from langchain_community.document_loaders import UnstructuredPDFLoader
+#from langchain_community.document_loaders import UnstructuredPDFLoader
+from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from get_vector_db import get_vector_db
 
@@ -25,7 +26,7 @@ def save_file(file):
 # Function to load and split the data from the PDF file
 def load_and_split_data(file_path):
     # Load the PDF file and split the data into chunks
-    loader = UnstructuredPDFLoader(file_path=file_path)
+    loader = TextLoader(file_path=file_path)
     data = loader.load()
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=7500, chunk_overlap=100)
     chunks = text_splitter.split_documents(data)
@@ -35,7 +36,7 @@ def load_and_split_data(file_path):
 # Main function to handle the embedding process
 def embed(file):
     # Check if the file is valid, save it, load and split the data, add to the database, and remove the temporary file
-    if file.filename != '' and file and allowed_file(file.filename):
+    if file.filename != '' and file:
         file_path = save_file(file)
         chunks = load_and_split_data(file_path)
         db = get_vector_db()

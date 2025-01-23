@@ -6,6 +6,7 @@ load_dotenv()
 from flask import Flask, request, jsonify
 from embed import embed
 from query import query
+from build import build
 from get_vector_db import get_vector_db
 
 TEMP_FOLDER = os.getenv('TEMP_FOLDER', './_temp')
@@ -39,6 +40,18 @@ def route_query():
         return jsonify({"message": response}), 200
 
     return jsonify({"error": "Something went wrong"}), 400
+
+@app.route('/build', methods=['POST'])
+def route_build():
+    data = request.get_json()
+    response = build(data.get('URL'))
+
+    if response:
+        return jsonify({"message": response}), 200
+
+    return jsonify({"error": "Something went wrong"}), 400
+
+
 
 @app.route('/delete', methods=['DELETE'])
 def route_delete():

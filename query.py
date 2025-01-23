@@ -5,6 +5,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from get_vector_db import get_vector_db
+import logging
+
+logging.basicConfig()
+logging.getLogger("langchain.retrievers.multi_query").setLevel(logging.INFO)
+
 
 LLM_MODEL = os.getenv('LLM_MODEL', 'mistral')
 
@@ -20,7 +25,7 @@ def get_prompt():
         Original question: {question}""",
     )
 
-    template = """Answer the question based ONLY on the following context:
+    template = """You are Singleview and EPM expert, answer the question based ONLY on the following context:
     {context}
     Question: {question}
     """
@@ -33,7 +38,7 @@ def get_prompt():
 def query(input):
     if input:
         # Initialize the language model with the specified model name
-        llm = ChatOllama(model=LLM_MODEL)
+        llm = ChatOllama(model=LLM_MODEL, base_url='http://172.28.193.30:11434')
         # Get the vector database instance
         db = get_vector_db()
         # Get the prompt templates
