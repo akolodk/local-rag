@@ -10,10 +10,18 @@ from confluence_ai.load import load_page
 # Initialize the Ollama model
 ollama_model = OllamaLLM(
     #model="deepseek-r1",  # Replace with your desired Ollama model
-    model="deepseek-r1:1.5b",
-    #model="llama3.2",
+    #model="deepseek-r1:1.5b",
+    #model="llama3.1",
+    model="llama3.2",
+    #model="mistral",
     base_url="http://172.28.193.30:11434",  # Ensure Ollama server is running
-    num_ctx=8192 # make the context larger
+    num_ctx=8192, # make the context larger
+    top_k=70,
+    top_p=0.5,
+    mirostat_tau=4,
+    num_predict=300,
+    keep_alive=600
+
     #top
 )
 
@@ -24,10 +32,10 @@ context = "\n\n".join([doc.page_content for doc in docs])
 
 # Create a new prompt with the context
 contextual_prompt = f"""\
-Here is a text in markdown format:
+Here is a text:
 {context}
 
-extract explicit and implicit requirements.
+provide summary, be concise.
 """
 
 # Use the model with streaming
