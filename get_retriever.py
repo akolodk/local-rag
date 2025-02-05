@@ -1,16 +1,14 @@
 import os
 from langchain.retrievers import ParentDocumentRetriever
-from langchain.text_splitter import MarkdownTextSplitter
+from langchain.text_splitter import MarkdownTextSplitter, TextSplitter, MarkdownHeaderTextSplitter
 from langchain.storage import LocalFileStore
 from langchain.storage._lc_store import create_kv_docstore
 
 STORE_PATH = os.getenv('STORE_PATH', 'store')
 
-def get_retriever(db,k) -> ParentDocumentRetriever:
-    parent_splitter = MarkdownTextSplitter(chunk_size=4000, chunk_overlap=0)
-    child_splitter = MarkdownTextSplitter(chunk_size=200, chunk_overlap=50) 
-    # The storage layer for the parent documents
+def get_retriever(db, k=4, parent_splitter=MarkdownTextSplitter(), child_splitter=MarkdownTextSplitter()) -> ParentDocumentRetriever:
 
+    # The storage layer for the parent documents
     fs = LocalFileStore(f"./{STORE_PATH}")
     store = create_kv_docstore(fs)
     # Initialize the retriever

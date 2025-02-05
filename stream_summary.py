@@ -16,12 +16,11 @@ ollama_model = OllamaLLM(
     #model="mistral",
     base_url="http://172.28.193.30:11434",  # Ensure Ollama server is running
     num_ctx=8192, # make the context larger
-    top_k=70,
+    top_k=20,
     top_p=0.5,
     mirostat_tau=4,
-    num_predict=300,
-    keep_alive=600
-
+    num_predict=1300,
+    keep_alive=1200
     #top
 )
 
@@ -32,10 +31,11 @@ context = "\n\n".join([doc.page_content for doc in docs])
 
 # Create a new prompt with the context
 contextual_prompt = f"""\
-Here is a text:
+Here is a Use case text:
+
 {context}
 
-provide summary, be concise.
+provide a thourough summary for the use case, do not skip anything important, include Title, Description, Key Features and Requirements only.
 """
 
 # Use the model with streaming

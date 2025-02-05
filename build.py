@@ -2,18 +2,15 @@ import os
 from datetime import datetime
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
-from langchain.text_splitter import MarkdownTextSplitter
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import MarkdownTextSplitter, RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownHeaderTextSplitter
 from get_vector_db import get_vector_db
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from langchain.retrievers import ParentDocumentRetriever
-from langchain.storage import LocalFileStore
-from langchain.storage._lc_store import create_kv_docstore
 from get_retriever import get_retriever
 
-STORE_PATH = os.getenv('STORE_PATH', 'store')
+os.environ["USER_AGENT"] = "akolodk/testing RAG"
 
 def extract_urls(url):
     """
@@ -44,11 +41,14 @@ def extract_urls(url):
                 absolute_url = urljoin(url, href)
                 urls.append(absolute_url)
 
-        urls = [#'http://dingo:8080/11.00/cb/server/src/std/doc/std_sas.html',
+        urls = ['http://dingo:8080/11.00/cb/server/src/bkr/doc/bkr_sas.html',
                 'http://dingo:8080/11.00/cb/server/src/bgp/doc/bgp_sas.html',
-                #'http://dingo:8080/11.00/cb/server/src/rgp/doc/rgp_sas.html',
-                #'http://dingo:8080/11.00/cb/server/src/igp/doc/igp_sas.html',
-                #'http://dingo:8080/11.00/cb/server/src/sep/doc/sep_sas.html'
+                'http://dingo:8080/11.00/cb/server/src/rgp/doc/rgp_sas.html',
+                'http://dingo:8080/11.00/cb/server/src/igp/doc/igp_sas.html',
+                'http://dingo:8080/11.00/cb/server/src/tuxedo/billrun/doc/billrun_sas.html',
+                'http://dingo:8080/11.00/cb/server/src/tuxedo/invoice/doc/invoice_sas.html',
+                'http://dingo:8080/11.00/cb/server/src/ert/doc/ert_sas.html',
+                'http://dingo:8080/11.00/cb/server/src/bgp/doc/bgp_performance.html'
                 ]
 
 
@@ -85,7 +85,7 @@ def build(url):
             print(f"Chunk {i + 1}:\n{chunk}\n")    
     return True
 
-def build_1(url):
+def build_parent_document(url):
     db = get_vector_db()
     urls = extract_urls(url)
     print(urls)  
@@ -96,28 +96,29 @@ def build_1(url):
     docs_transformed = html2text.transform_documents(docs)
     print(docs_transformed)
 
-    f = open("demofile3.txt", "w")
-
+    f = open("markdown.md", "w")
     for doc in docs_transformed:
-       f.write(doc.page_content)
+        f.write(doc.page_content)
+        f.write('-' * 50 + '\n')
     f.close()
 
     # Initialize the MarkdownTextSplitter
     print(f'splitting...') 
+
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+    ]
+
+    md_docs = []
+    markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on, strip_headers=False)
+    for doc in docs_transformed:
+        md_docs.extend(markdown_splitter.split_text(doc.page_content, strip_headers=False))
+
     parent_splitter = MarkdownTextSplitter(chunk_size=4000, chunk_overlap=0)
-    child_splitter = MarkdownTextSplitter(chunk_size=200, chunk_overlap=50) 
-    # The storage layer for the parent documents
-
-    fs = LocalFileStore(f"./{STORE_PATH}")
-    store = create_kv_docstore(fs)
+    child_splitter = MarkdownTextSplitter(chunk_size=200, chunk_overlap=20) 
     # Initialize the retriever
-    retriever = ParentDocumentRetriever(
-        vectorstore=db,
-        docstore=store,
-        child_splitter=child_splitter,
-        parent_splitter=parent_splitter,
-    )
-
-    retriever.add_documents(docs_transformed)
+    retriever = get_retriever(db, parent_splitter=parent_splitter, child_splitter=child_splitter) 
+    retriever.add_documents(md_docs)
  
     return True
