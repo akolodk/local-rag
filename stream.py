@@ -3,7 +3,19 @@ from get_vector_db import get_vector_db
 from get_retriever import get_retriever
 import os
 
+
+
 os.environ["USER_AGENT"] = "akolodk/testing RAG"
+
+# Use the model with streaming
+# and print tokens as they arrive
+def chat_stream(model, prompt):
+    print("Streaming started")
+    for token in model.stream(input=prompt):
+        print(token, end='', flush=True)
+        yield token
+        
+
 
 # Initialize the Ollama model
 ollama_model = OllamaLLM(
@@ -47,9 +59,10 @@ Answer the question as best as you can:
 {prompt}
 """
 
-# Use the model with streaming
-# and print tokens as they arrive
-for token in ollama_model.stream(input=contextual_prompt):
-    print(token, end='', flush=True)
+for x in chat_stream(ollama_model, contextual_prompt):
+    print(x, end='', flush=True)
+
+
+
 
 print("\n\nStreaming complete.")  # Indicate that streaming is done

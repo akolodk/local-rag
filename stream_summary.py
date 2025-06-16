@@ -1,4 +1,4 @@
-from langchain_ollama.llms import OllamaLLM
+from langchain_ollama.llm import OllamaLLM
 
 import sys
 from pathlib import Path
@@ -35,8 +35,8 @@ Here is a Use case text:
 
 {context}
 
-provide a thourough summary for the use case, do not skip anything important, include Title, Description, Key Features and Requirements only.
-"""
+provide a concise summary for the use case, do not skip anything important, include Title, Description, Key Features and Requirements only.
+Go as long as necessary to list all requirements, do not copy text from the context."""
 
 # Use the model with streaming
 # and print tokens as they arrive
